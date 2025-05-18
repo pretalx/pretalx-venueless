@@ -27,7 +27,7 @@ def on_schedule_release(sender, schedule, user, **kwargs):
 def navbar_info(sender, request, **kwargs):
     url = resolve(request.path_info)
 
-    if not request.user.has_perm("orga.change_settings", request.event):
+    if not request.user.has_perm("event.update_event", request.event):
         return []
 
     return [
