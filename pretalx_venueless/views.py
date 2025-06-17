@@ -20,7 +20,7 @@ from .forms import VenuelessSettingsForm
 from .venueless import push_to_venueless
 
 
-@method_decorator(csp_replace(FORM_ACTION="*"), name="dispatch")
+@method_decorator(csp_replace({"form-action": "*"}), name="dispatch")
 class Settings(EventSettingsPermission, FormView):
     form_class = VenuelessSettingsForm
     template_name = "pretalx_venueless/settings.html"
