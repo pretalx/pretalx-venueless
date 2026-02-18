@@ -60,7 +60,7 @@ def render_join_link(event, request):
     venueless_settings = getattr(event, "venueless_settings", None)
     if (
         request.user.is_anonymous
-        or not event.talks.filter(speakers__in=[request.user]).exists()
+        or not event.talks.filter(speakers__user=request.user).exists()
         or not venueless_settings
         or not venueless_settings.secret
         or not venueless_settings.show_join_link

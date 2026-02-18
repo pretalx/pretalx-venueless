@@ -89,21 +89,21 @@ def check(request, event):
 @method_decorator(xframe_options_exempt, "dispatch")
 class SpeakerJoin(View):
     def post(self, request, *args, **kwargs):
-        speaker = request.user
-        if speaker.is_anonymous:
+        if request.user.is_anonymous:
             raise Http404(_("Unknown user or not authorized to access venueless."))
-        if speaker not in request.event.speakers:
+        speaker = request.event.speakers.filter(user=request.user).first()
+        if not speaker:
             raise PermissionDenied
 
         venueless_settings = request.event.venueless_settings
         if venueless_settings.join_start and venueless_settings.join_start < now():
             raise PermissionDenied
 
-        talks = request.event.talks.filter(speakers__in=[speaker]).distinct()
+        talks = request.event.talks.filter(speakers=speaker).distinct()
         iat = dt.datetime.utcnow()
         exp = iat + dt.timedelta(days=30)
         profile = {
-            "display_name": speaker.name,
+            "display_name": speaker.get_display_name(),
             "fields": {
                 "pretalx_id": speaker.code,
             },
@@ -126,7 +126,8 @@ class SpeakerJoin(View):
             ),
         }
         token = jwt.encode(payload, venueless_settings.secret, algorithm="HS256")
-        speaker.profiles.filter(event=request.event).update(has_arrived=True)
+        speaker.has_arrived = True
+        speaker.save(update_fields=["has_arrived"])
 
         return redirect(
             f"{venueless_settings.join_url}/#token={token}".replace("//#", "/#")
