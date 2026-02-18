@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from i18nfield.forms import I18nModelForm
+
 from pretalx.common.forms.widgets import HtmlDateTimeInput
 
 from .models import VenuelessSettings
@@ -28,7 +29,7 @@ class VenuelessSettingsForm(I18nModelForm):
         initial_token=None,
         initial_url=None,
         return_url=None,
-        **kwargs
+        **kwargs,
     ):
         self.instance, _ = VenuelessSettings.objects.get_or_create(event=event)
         super().__init__(*args, **kwargs, instance=self.instance, locales=event.locales)

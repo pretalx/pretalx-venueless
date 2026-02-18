@@ -13,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import FormView
+
 from pretalx.event.models import Event
 from pretalx.orga.views.event import EventSettingsPermission
 
@@ -92,11 +93,11 @@ class SpeakerJoin(View):
         if speaker.is_anonymous:
             raise Http404(_("Unknown user or not authorized to access venueless."))
         if speaker not in request.event.speakers:
-            raise PermissionDenied()
+            raise PermissionDenied
 
         venueless_settings = request.event.venueless_settings
         if venueless_settings.join_start and venueless_settings.join_start < now():
-            raise PermissionDenied()
+            raise PermissionDenied
 
         talks = request.event.talks.filter(speakers__in=[speaker]).distinct()
         iat = dt.datetime.utcnow()
@@ -128,7 +129,5 @@ class SpeakerJoin(View):
         speaker.profiles.filter(event=request.event).update(has_arrived=True)
 
         return redirect(
-            "{}/#token={}".format(venueless_settings.join_url, token).replace(
-                "//#", "/#"
-            )
+            f"{venueless_settings.join_url}/#token={token}".replace("//#", "/#")
         )

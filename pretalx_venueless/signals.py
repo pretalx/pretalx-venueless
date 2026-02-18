@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.template.loader import get_template
 from django.urls import resolve, reverse
 from django.utils.translation import gettext_lazy as _
+
 from pretalx.cfp.signals import html_above_profile_page, html_above_submission_list
 from pretalx.orga.signals import nav_event_settings
 from pretalx.schedule.signals import schedule_release
