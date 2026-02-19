@@ -17,6 +17,9 @@ class PluginApp(AppConfig):
         visible = True
         version = __version__
         category = "INTEGRATION"
+        settings_links = [
+            (gettext_lazy("Settings"), "plugins:pretalx_venueless:settings", {}),
+        ]
 
     def ready(self):
         from . import signals  # noqa: F401, PLC0415
