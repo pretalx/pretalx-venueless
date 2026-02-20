@@ -1,7 +1,11 @@
 Venueless integration
 ==========================
 
-This is a plugin for `pretalx`_. 
+.. image:: https://raw.githubusercontent.com/pretalx/pretalx-venueless/python-coverage-comment-action-data/badge.svg
+   :target: https://htmlpreview.github.io/?https://github.com/pretalx/pretalx-venueless/blob/python-coverage-comment-action-data/htmlcov/index.html
+   :alt: Coverage
+
+This is a plugin for `pretalx`_.
 
 Use version 1.0.0 with pretalx 2.2.0, and later versions with pretalx versions past 2.2.0.
 
@@ -14,12 +18,35 @@ Development setup
 
 3. Activate the virtual environment you use for pretalx development.
 
-4. Execute ``python setup.py develop`` within this directory to register this application with pretalx's plugin registry.
+4. Run ``pip install -e .`` within this directory to register this application with pretalx's plugin registry.
 
-5. Execute ``make`` within this directory to compile translations.
+5. Restart your local pretalx server. This plugin should show up in the plugin list shown on startup in the console.
+   You can now use the plugin from this repository for your events by enabling it in the 'plugins' tab in the settings.
 
-6. Restart your local pretalx server. You can now use the plugin from this repository for your events by enabling it in
-   the 'plugins' tab in the settings.
+This project uses `just`_ as a task runner and `uv`_ for dependency management.
+
+Code style
+~~~~~~~~~~
+
+To check your plugin for code style violations, run::
+
+    just fmt-check
+
+To auto-fix formatting issues, run::
+
+    just fmt
+
+Testing
+~~~~~~~
+
+To run the test suite, run::
+
+    just test
+
+This will automatically install pretalx if it's not already present. If you want
+to test against a local pretalx checkout instead, run::
+
+    just install-pretalx-local /path/to/pretalx
 
 
 License
@@ -32,3 +59,5 @@ Released under the terms of the Apache License 2.0
 
 .. _pretalx: https://github.com/pretalx/pretalx
 .. _pretalx development setup: https://docs.pretalx.org/en/latest/developer/setup.html
+.. _just: https://just.systems/
+.. _uv: https://docs.astral.sh/uv/
