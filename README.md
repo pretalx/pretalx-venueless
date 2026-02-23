@@ -8,10 +8,10 @@
 | pretalx\_venueless/apps.py         |       15 |        0 |        0 |        0 |    100% |           |
 | pretalx\_venueless/forms.py        |       35 |        1 |       14 |        1 |     96% |        37 |
 | pretalx\_venueless/models.py       |       20 |        0 |        0 |        0 |    100% |           |
-| pretalx\_venueless/signals.py      |       38 |        4 |        6 |        1 |     89% | 56, 70-75 |
+| pretalx\_venueless/signals.py      |       37 |        4 |        8 |        1 |     89% | 53, 67-69 |
 | pretalx\_venueless/venueless.py    |       11 |        0 |        2 |        0 |    100% |           |
-| pretalx\_venueless/views.py        |       86 |       16 |       22 |        4 |     78% |70->72, 73, 84, 98-132 |
-| **TOTAL**                          |  **206** |   **21** |   **44** |    **6** | **88%** |           |
+| pretalx\_venueless/views.py        |       87 |       16 |       22 |        4 |     78% |66->68, 69, 80, 94-124 |
+| **TOTAL**                          |  **206** |   **21** |   **46** |    **6** | **88%** |           |
 
 
 ## Setup coverage badge
