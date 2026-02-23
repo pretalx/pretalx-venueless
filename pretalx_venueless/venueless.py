@@ -10,13 +10,9 @@ def push_to_venueless(event):
     token = event.venueless_settings.token
     response = requests.post(
         url,
-        json={
-            "domain": event.custom_domain or settings.SITE_URL,
-            "event": event.slug,
-        },
-        headers={
-            "Authorization": f"Bearer {token}",
-        },
+        json={"domain": event.custom_domain or settings.SITE_URL, "event": event.slug},
+        headers={"Authorization": f"Bearer {token}"},
+        timeout=30,
     )
     if response.status_code == 200:
         event.venueless_settings.last_push = now()

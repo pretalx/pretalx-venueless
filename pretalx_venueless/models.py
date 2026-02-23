@@ -8,9 +8,7 @@ from pretalx.common.text.phrases import phrases
 
 class VenuelessSettings(models.Model):
     event = models.OneToOneField(
-        to="event.Event",
-        on_delete=models.CASCADE,
-        related_name="venueless_settings",
+        to="event.Event", on_delete=models.CASCADE, related_name="venueless_settings"
     )
     token = models.TextField(
         help_text=_(
@@ -42,20 +40,10 @@ class VenuelessSettings(models.Model):
         null=True,
         blank=True,
     )
-    secret = models.TextField(
-        verbose_name=_("Venueless secret"),
-        null=True,
-        blank=True,
-    )
-    issuer = models.TextField(
-        verbose_name=_("Venueless issuer"),
-        null=True,
-        blank=True,
-    )
+    secret = models.TextField(verbose_name=_("Venueless secret"), null=True, blank=True)
+    issuer = models.TextField(verbose_name=_("Venueless issuer"), null=True, blank=True)
     audience = models.TextField(
-        verbose_name=_("Venueless audience"),
-        null=True,
-        blank=True,
+        verbose_name=_("Venueless audience"), null=True, blank=True
     )
     join_start = models.DateTimeField(
         verbose_name=_("Do not allow access before"), null=True, blank=True
@@ -66,6 +54,9 @@ class VenuelessSettings(models.Model):
         null=True,
         blank=True,
     )
+
+    def __str__(self):
+        return f"VenuelessSettings(event={self.event})"
 
     @property
     def can_join(self):

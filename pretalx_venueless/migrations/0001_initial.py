@@ -7,9 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     initial = True
 
-    dependencies = [
-        ("event", "0029_event_domain"),
-    ]
+    dependencies = [("event", "0029_event_domain")]
 
     operations = [
         migrations.CreateModel(
@@ -34,5 +32,5 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-        ),
+        )
     ]

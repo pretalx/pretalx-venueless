@@ -1,6 +1,7 @@
 import datetime as dt
 
 import jwt
+import requests
 from csp.decorators import csp_replace
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
@@ -29,9 +30,7 @@ class Settings(EventSettingsPermission, FormView):
     def get_success_url(self) -> str:
         return reverse(
             "plugins:pretalx_venueless:settings",
-            kwargs={
-                "event": self.request.event.slug,
-            },
+            kwargs={"event": self.request.event.slug},
         )
 
     def get_form_kwargs(self):
@@ -54,9 +53,6 @@ class Settings(EventSettingsPermission, FormView):
     def form_valid(self, form):
         form.save()
 
-        # TODO use short token / login URL to get long token
-        # then save the long token and perform the POST request below
-
         response = None
         try:
             response = push_to_venueless(self.request.event)
@@ -65,7 +61,7 @@ class Settings(EventSettingsPermission, FormView):
             if redirect_url:
                 return redirect(redirect_url)
             messages.success(self.request, _("Yay! We saved your changes."))
-        except Exception as e:
+        except (requests.RequestException, OSError) as e:
             error_message = ""
             if response is not None and len(response.text) < 100:
                 error_message = response.text.strip('"')
@@ -100,13 +96,11 @@ class SpeakerJoin(View):
             raise PermissionDenied
 
         talks = request.event.talks.filter(speakers=speaker).distinct()
-        iat = dt.datetime.utcnow()
+        iat = dt.datetime.now(tz=dt.UTC)
         exp = iat + dt.timedelta(days=30)
         profile = {
             "display_name": speaker.get_display_name(),
-            "fields": {
-                "pretalx_id": speaker.code,
-            },
+            "fields": {"pretalx_id": speaker.code},
         }
         if speaker.avatar_url:
             profile["profile_picture"] = speaker.get_avatar_url(request.event)
@@ -119,9 +113,7 @@ class SpeakerJoin(View):
             "uid": speaker.code,
             "profile": profile,
             "traits": list(
-                {
-                    f"pretalx-event-{request.event.slug}",
-                }
+                {f"pretalx-event-{request.event.slug}"}
                 | {f"pretalx-session-{submission.code}" for submission in talks}
             ),
         }

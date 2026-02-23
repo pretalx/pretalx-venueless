@@ -34,7 +34,7 @@ class VenuelessSettingsForm(I18nModelForm):
         self.instance, _ = VenuelessSettings.objects.get_or_create(event=event)
         super().__init__(*args, **kwargs, instance=self.instance, locales=event.locales)
         if not event:
-            raise Exception("Missing event")
+            raise ValueError("Missing event")
 
         if initial_token:
             self.fields["token"].initial = initial_token

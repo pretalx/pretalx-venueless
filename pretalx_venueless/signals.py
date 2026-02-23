@@ -14,9 +14,8 @@ from .venueless import push_to_venueless
 
 @receiver(schedule_release, dispatch_uid="venuless_schedule_release")
 def on_schedule_release(sender, schedule, user, **kwargs):
-    try:
-        venueless_settings = sender.venueless_settings
-    except Exception:
+    venueless_settings = getattr(sender, "venueless_settings", None)
+    if not venueless_settings:
         return
     if not (venueless_settings.url and venueless_settings.token):
         return
@@ -36,9 +35,7 @@ def navbar_info(sender, request, **kwargs):
             "label": _("Venueless"),
             "url": reverse(
                 "plugins:pretalx_venueless:settings",
-                kwargs={
-                    "event": request.event.slug,
-                },
+                kwargs={"event": request.event.slug},
             ),
             "active": url.namespace == "plugins:pretalx_venueless"
             and url.url_name == "settings",
@@ -68,8 +65,5 @@ def render_join_link(event, request):
         return
 
     template = get_template("pretalx_venueless/join_link.html")
-    ctx = {
-        "event": event,
-        "user": request.user,
-    }
+    ctx = {"event": event, "user": request.user}
     return template.render(ctx, request=request)
