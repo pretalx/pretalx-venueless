@@ -10,7 +10,7 @@
 | pretalx\_venueless/models.py       |       20 |        0 |        0 |        0 |    100% |           |
 | pretalx\_venueless/signals.py      |       37 |        4 |        8 |        1 |     89% | 53, 67-69 |
 | pretalx\_venueless/venueless.py    |       11 |        0 |        2 |        0 |    100% |           |
-| pretalx\_venueless/views.py        |       87 |       16 |       22 |        4 |     78% |66->68, 69, 80, 94-124 |
+| pretalx\_venueless/views.py        |       87 |       16 |       22 |        4 |     78% |66-\>68, 69, 80, 94-124 |
 | **TOTAL**                          |  **206** |   **21** |   **46** |    **6** | **88%** |           |
 
 
