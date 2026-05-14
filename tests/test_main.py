@@ -1,8 +1,8 @@
 from datetime import timedelta
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
-import requests
+import urllib3
 from django.urls import reverse
 from django.utils.timezone import now
 
@@ -86,10 +86,7 @@ def test_orga_save_join_link_without_required_fields(orga_client, event):
 def test_orga_save_with_push_error(orga_client, event):
     url = reverse(SETTINGS_URL_NAME, kwargs={"event": event.slug})
     with patch("pretalx_venueless.views.push_to_venueless") as mock_push:
-        mock_push.return_value.raise_for_status.side_effect = requests.ConnectionError(
-            "Connection failed"
-        )
-        mock_push.return_value.text = "Connection failed"
+        mock_push.side_effect = urllib3.exceptions.HTTPError("Connection failed")
         response = orga_client.post(
             url,
             {"url": "https://venueless.example.com/", "token": "test-token"},
@@ -102,7 +99,7 @@ def test_orga_save_with_push_error(orga_client, event):
 def test_orga_save_with_return_url(orga_client, event):
     url = reverse(SETTINGS_URL_NAME, kwargs={"event": event.slug})
     with patch("pretalx_venueless.views.push_to_venueless") as mock_push:
-        mock_push.return_value.raise_for_status.return_value = None
+        mock_push.return_value = MagicMock(status=200)
         response = orga_client.post(
             url,
             {
@@ -191,11 +188,11 @@ def test_push_to_venueless_success(event):
     VenuelessSettings.objects.create(
         event=event, token="test-token", url="https://venueless.example.com/"
     )
-    with patch("pretalx_venueless.venueless.requests.post") as mock_post:
-        mock_post.return_value.status_code = 200
+    with patch("pretalx_venueless.venueless.urllib3.request") as mock_request:
+        mock_request.return_value.status = 200
         response = push_to_venueless(event)
-    assert response.status_code == 200
-    mock_post.assert_called_once()
+    assert response.status == 200
+    mock_request.assert_called_once()
 
 
 @pytest.mark.django_db
@@ -203,10 +200,10 @@ def test_push_to_venueless_failure(event):
     VenuelessSettings.objects.create(
         event=event, token="test-token", url="https://venueless.example.com/"
     )
-    with patch("pretalx_venueless.venueless.requests.post") as mock_post:
-        mock_post.return_value.status_code = 500
+    with patch("pretalx_venueless.venueless.urllib3.request") as mock_request:
+        mock_request.return_value.status = 500
         response = push_to_venueless(event)
-    assert response.status_code == 500
+    assert response.status == 500
 
 
 @pytest.mark.django_db

@@ -1,7 +1,7 @@
 import datetime as dt
 
 import jwt
-import requests
+import urllib3
 from csp.decorators import csp_replace
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
@@ -56,20 +56,24 @@ class Settings(EventSettingsPermission, FormView):
         response = None
         try:
             response = push_to_venueless(self.request.event)
-            response.raise_for_status()
-            redirect_url = form.cleaned_data.get("return_url")
-            if redirect_url:
-                return redirect(redirect_url)
-            messages.success(self.request, _("Yay! We saved your changes."))
-        except (requests.RequestException, OSError) as e:
-            error_message = ""
-            if response is not None and len(response.text) < 100:
-                error_message = response.text.strip('"')
+        except (urllib3.exceptions.HTTPError, OSError) as e:
+            messages.error(self.request, _("Unable to reach Venueless:") + f" {e}")
+            return super().form_valid(form)
+
+        if response.status >= 400:
+            body = response.data.decode("utf-8", errors="replace")
+            error_message = body.strip('"') if len(body) < 100 else ""
             if not error_message:
-                error_message = str(e)
+                error_message = f"HTTP {response.status}"
             messages.error(
                 self.request, _("Unable to reach Venueless:") + f" {error_message}"
             )
+            return super().form_valid(form)
+
+        redirect_url = form.cleaned_data.get("return_url")
+        if redirect_url:
+            return redirect(redirect_url)
+        messages.success(self.request, _("Yay! We saved your changes."))
         return super().form_valid(form)
 
 
