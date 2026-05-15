@@ -2,16 +2,16 @@
 
 [Full report](https://htmlpreview.github.io/?https://github.com/pretalx/pretalx-venueless/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
-| Name                               |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
-|----------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
-| pretalx\_venueless/\_\_init\_\_.py |        1 |        0 |        0 |        0 |    100% |           |
-| pretalx\_venueless/apps.py         |       15 |        0 |        0 |        0 |    100% |           |
-| pretalx\_venueless/forms.py        |       35 |        1 |       14 |        1 |     96% |        37 |
-| pretalx\_venueless/models.py       |       20 |        0 |        0 |        0 |    100% |           |
-| pretalx\_venueless/signals.py      |       37 |        4 |        8 |        1 |     89% | 53, 67-69 |
-| pretalx\_venueless/venueless.py    |       11 |        0 |        2 |        0 |    100% |           |
-| pretalx\_venueless/views.py        |       87 |       16 |       22 |        4 |     78% |66-\>68, 69, 80, 94-124 |
-| **TOTAL**                          |  **206** |   **21** |   **46** |    **6** | **88%** |           |
+| Name                               |    Stmts |     Miss |   Branch |   BrPart |    Cover |   Missing |
+|----------------------------------- | -------: | -------: | -------: | -------: | -------: | --------: |
+| pretalx\_venueless/\_\_init\_\_.py |        1 |        0 |        0 |        0 |     100% |           |
+| pretalx\_venueless/apps.py         |       15 |        0 |        0 |        0 |     100% |           |
+| pretalx\_venueless/forms.py        |       35 |        0 |       14 |        0 |     100% |           |
+| pretalx\_venueless/models.py       |       20 |        0 |        0 |        0 |     100% |           |
+| pretalx\_venueless/signals.py      |       37 |        0 |        8 |        0 |     100% |           |
+| pretalx\_venueless/venueless.py    |       11 |        0 |        2 |        0 |     100% |           |
+| pretalx\_venueless/views.py        |       89 |        0 |       22 |        0 |     100% |           |
+| **TOTAL**                          |  **208** |    **0** |   **46** |    **0** | **100%** |           |
 
 
 ## Setup coverage badge
