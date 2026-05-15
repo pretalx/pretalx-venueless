@@ -31,10 +31,10 @@ class VenuelessSettingsForm(I18nModelForm):
         return_url=None,
         **kwargs,
     ):
-        self.instance, _ = VenuelessSettings.objects.get_or_create(event=event)
-        super().__init__(*args, **kwargs, instance=self.instance, locales=event.locales)
         if not event:
             raise ValueError("Missing event")
+        self.instance, _ = VenuelessSettings.objects.get_or_create(event=event)
+        super().__init__(*args, **kwargs, instance=self.instance, locales=event.locales)
 
         if initial_token:
             self.fields["token"].initial = initial_token

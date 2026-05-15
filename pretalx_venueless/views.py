@@ -107,7 +107,7 @@ class SpeakerJoin(View):
             "fields": {"pretalx_id": speaker.code},
         }
         if speaker.avatar_url:
-            profile["profile_picture"] = speaker.get_avatar_url(request.event)
+            profile["profile_picture"] = speaker.avatar_url
 
         payload = {
             "iss": venueless_settings.issuer,
