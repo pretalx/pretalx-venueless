@@ -3,14 +3,20 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import urllib3
+from django.test import RequestFactory
 from django.urls import reverse
 from django.utils.timezone import now
+from django_scopes import scope, scopes_disabled
 
-from pretalx.cfp.signals import html_above_profile_page
+from pretalx.cfp.signals import html_above_profile_page, html_above_submission_list
+from pretalx.event.domain.plugins import disable_plugin, enable_plugin
+from pretalx.person.models.picture import ProfilePicture
 from pretalx.schedule.signals import schedule_release
 
+from pretalx_venueless.forms import VenuelessSettingsForm
 from pretalx_venueless.models import VenuelessSettings
 from pretalx_venueless.venueless import push_to_venueless
+from pretalx_venueless.views import check
 
 SETTINGS_URL_NAME = "plugins:pretalx_venueless:settings"
 CHECK_URL_NAME = "plugins:pretalx_venueless:check"
@@ -29,7 +35,7 @@ def test_orga_can_access_settings(orga_client, event):
 def test_orga_can_save_settings(orga_client, event):
     url = reverse(SETTINGS_URL_NAME, kwargs={"event": event.slug})
     with patch("pretalx_venueless.views.push_to_venueless") as mock_push:
-        mock_push.return_value.raise_for_status.return_value = None
+        mock_push.return_value = MagicMock(status=200)
         response = orga_client.post(
             url,
             {"url": "https://venueless.example.com/", "token": "test-token"},
@@ -45,7 +51,7 @@ def test_orga_can_save_settings(orga_client, event):
 def test_orga_can_save_settings_with_join_link(orga_client, event):
     url = reverse(SETTINGS_URL_NAME, kwargs={"event": event.slug})
     with patch("pretalx_venueless.views.push_to_venueless") as mock_push:
-        mock_push.return_value.raise_for_status.return_value = None
+        mock_push.return_value = MagicMock(status=200)
         response = orga_client.post(
             url,
             {
@@ -254,9 +260,95 @@ def test_join_endpoint_requires_speaker(orga_client, event, venueless_settings):
 
 @pytest.mark.django_db
 def test_check_endpoint_disabled_plugin(client, event):
-    event.disable_plugin("pretalx_venueless")
+    disable_plugin(event, "pretalx_venueless")
     event.save()
     response = client.get(reverse(CHECK_URL_NAME, kwargs={"event": event.slug}))
     assert response.status_code == 404
-    event.enable_plugin("pretalx_venueless")
+    enable_plugin(event, "pretalx_venueless")
     event.save()
+
+
+@pytest.mark.django_db
+def test_check_view_unknown_event_returns_404():
+    request = RequestFactory().get("/")
+    response = check(request, "does-not-exist")
+    assert response.status_code == 404
+    assert response.headers["Access-Control-Allow-Origin"] == "*"
+
+
+@pytest.mark.django_db
+def test_form_requires_event():
+    with pytest.raises(ValueError, match="Missing event"):
+        VenuelessSettingsForm(event=None)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("data", "expected"),
+    (
+        (b'"server error"', "server error"),
+        (b"", "HTTP 500"),
+        (b'"' + b"x" * 200 + b'"', "HTTP 500"),
+    ),
+)
+def test_orga_save_with_push_error_response(orga_client, event, data, expected):
+    url = reverse(SETTINGS_URL_NAME, kwargs={"event": event.slug})
+    with patch("pretalx_venueless.views.push_to_venueless") as mock_push:
+        mock_push.return_value = MagicMock(status=500, data=data)
+        response = orga_client.post(
+            url,
+            {"url": "https://venueless.example.com/", "token": "test-token"},
+            follow=True,
+        )
+    assert response.status_code == 200
+    messages = list(response.context["messages"])
+    assert any(expected in str(m) for m in messages)
+
+
+@pytest.mark.django_db
+def test_submission_page_join_link_rendered(
+    released_speaker_client, event, venueless_settings
+):
+    request = released_speaker_client.get("/").wsgi_request
+    with scope(event=event):
+        results = html_above_submission_list.send(sender=event, request=request)
+    html_results = [r for _, r in results if r]
+    assert html_results
+    assert any("venueless" in r.lower() for r in html_results)
+
+
+@pytest.mark.django_db
+def test_speaker_can_join(released_speaker_client, event, venueless_settings):
+    response = released_speaker_client.post(
+        reverse(JOIN_URL_NAME, kwargs={"event": event.slug})
+    )
+    assert response.status_code == 302
+    assert response.url.startswith("https://venueless.example.com/join/#token=")
+
+
+@pytest.mark.django_db
+def test_speaker_can_join_with_avatar(
+    released_speaker, released_speaker_client, event, venueless_settings
+):
+    with scopes_disabled():
+        picture = ProfilePicture.objects.create(
+            user=released_speaker.user, avatar="avatars/test.png"
+        )
+        released_speaker.profile_picture = picture
+        released_speaker.save()
+    response = released_speaker_client.post(
+        reverse(JOIN_URL_NAME, kwargs={"event": event.slug})
+    )
+    assert response.status_code == 302
+
+
+@pytest.mark.django_db
+def test_speaker_join_blocked_after_join_start(
+    released_speaker_client, event, venueless_settings
+):
+    venueless_settings.join_start = now() - timedelta(days=1)
+    venueless_settings.save()
+    response = released_speaker_client.post(
+        reverse(JOIN_URL_NAME, kwargs={"event": event.slug})
+    )
+    assert response.status_code == 403

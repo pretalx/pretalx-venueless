@@ -5,9 +5,13 @@ from django.core import management
 from django_scopes import scopes_disabled
 
 from pretalx.event.domain.event import initialise_event
+from pretalx.event.domain.plugins import enable_plugin
 from pretalx.event.models import Event, Organiser, Team
-from pretalx.person.models import User
+from pretalx.person.models import SpeakerProfile, User
+from pretalx.schedule.domain.release import freeze_schedule
+from pretalx.schedule.models import Room, TalkSlot
 from pretalx.submission.models import Submission, SubmissionType
+from pretalx.submission.models.submission import SpeakerRole
 
 from pretalx_venueless.models import VenuelessSettings
 
@@ -48,7 +52,7 @@ def event(organiser):
             organiser=organiser,
         )
         initialise_event(event)
-        event.enable_plugin("pretalx_venueless")
+        enable_plugin(event, "pretalx_venueless")
         event.save()
         for team in organiser.teams.all():
             team.limit_events.add(event)
@@ -118,7 +122,7 @@ def speaker(event):
         user = User.objects.create_user(
             password="speakerpassw0rd", email="speaker@example.org", name="Test Speaker"
         )
-        speaker_profile = event.speakers_information.create(user=user)
+        speaker_profile = SpeakerProfile.objects.create(user=user, event=event)
         submission_type = SubmissionType.objects.filter(event=event).first()
         if not submission_type:
             submission_type = SubmissionType.objects.create(
@@ -130,11 +134,38 @@ def speaker(event):
             submission_type=submission_type,
             state="confirmed",
         )
-        submission.speakers.add(user)
+        SpeakerRole.objects.create(
+            submission=submission, speaker=speaker_profile, position=0
+        )
     return speaker_profile
 
 
 @pytest.fixture
 def speaker_client(speaker, client):
     client.force_login(speaker.user)
+    return client
+
+
+@pytest.fixture
+def released_speaker(speaker, event):
+    """A speaker whose talk is in a released schedule, so the speaker is
+    visible in event.speakers and event.talks."""
+    with scopes_disabled():
+        submission = speaker.submissions.filter(event=event).first()
+        room = Room.objects.create(event=event, name="Room 1")
+        TalkSlot.objects.create(
+            submission=submission,
+            schedule=event.wip_schedule,
+            room=room,
+            start=event.datetime_from,
+            end=event.datetime_from + dt.timedelta(hours=1),
+            is_visible=True,
+        )
+        freeze_schedule(event.wip_schedule, "v1", notify_speakers=False)
+    return speaker
+
+
+@pytest.fixture
+def released_speaker_client(released_speaker, client):
+    client.force_login(released_speaker.user)
     return client
