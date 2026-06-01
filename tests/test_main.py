@@ -102,7 +102,27 @@ def test_orga_save_with_push_error(orga_client, event):
 
 
 @pytest.mark.django_db
-def test_orga_save_with_return_url(orga_client, event):
+def test_orga_save_honours_safe_return_url(orga_client, event):
+    url = reverse(SETTINGS_URL_NAME, kwargs={"event": event.slug})
+    safe_return_url = f"/orga/event/{event.slug}/settings/"
+    with patch("pretalx_venueless.views.push_to_venueless") as mock_push:
+        mock_push.return_value = MagicMock(status=200)
+        response = orga_client.post(
+            url,
+            {
+                "url": "https://venueless.example.com/",
+                "token": "test-token",
+                "return_url": safe_return_url,
+            },
+        )
+    assert response.status_code == 302
+    assert response.url == safe_return_url
+
+
+@pytest.mark.django_db
+def test_orga_save_rejects_external_return_url(orga_client, event):
+    """Open-redirect guard: an off-site return_url must not be honoured; we
+    fall back to the settings page instead."""
     url = reverse(SETTINGS_URL_NAME, kwargs={"event": event.slug})
     with patch("pretalx_venueless.views.push_to_venueless") as mock_push:
         mock_push.return_value = MagicMock(status=200)
@@ -111,10 +131,11 @@ def test_orga_save_with_return_url(orga_client, event):
             {
                 "url": "https://venueless.example.com/",
                 "token": "test-token",
-                "return_url": "https://venueless.example.com/admin",
+                "return_url": "https://evil.example/phishing-login",
             },
         )
     assert response.status_code == 302
+    assert response.url == url
 
 
 @pytest.mark.django_db

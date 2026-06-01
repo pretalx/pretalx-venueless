@@ -9,6 +9,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -71,7 +72,11 @@ class Settings(EventSettingsPermission, FormView):
             return super().form_valid(form)
 
         redirect_url = form.cleaned_data.get("return_url")
-        if redirect_url:
+        if redirect_url and url_has_allowed_host_and_scheme(
+            redirect_url,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        ):
             return redirect(redirect_url)
         messages.success(self.request, _("Yay! We saved your changes."))
         return super().form_valid(form)
