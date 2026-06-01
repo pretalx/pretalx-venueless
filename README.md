@@ -10,8 +10,8 @@
 | pretalx\_venueless/models.py       |       20 |        0 |        0 |        0 |     100% |           |
 | pretalx\_venueless/signals.py      |       37 |        0 |        8 |        0 |     100% |           |
 | pretalx\_venueless/venueless.py    |       11 |        0 |        2 |        0 |     100% |           |
-| pretalx\_venueless/views.py        |       89 |        0 |       22 |        0 |     100% |           |
-| **TOTAL**                          |  **208** |    **0** |   **46** |    **0** | **100%** |           |
+| pretalx\_venueless/views.py        |       90 |        0 |       22 |        0 |     100% |           |
+| **TOTAL**                          |  **209** |    **0** |   **46** |    **0** | **100%** |           |
 
 
 ## Setup coverage badge
