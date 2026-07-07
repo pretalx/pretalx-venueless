@@ -21,9 +21,14 @@
                 </p>
             {% endif %}
             <div class="form-inline text-center">
-                <form method="post" target="_blank" action="{% url 'plugins:pretalx_venueless:join' event=event.slug %}" class="w-100">
+                <form
+                    method="post"
+                    target="_blank"
+                    action="{% url 'plugins:pretalx_venueless:join' event=event.slug %}"
+                    class="w-100"
+                >
                     {% csrf_token %}
-                    <button class="btn btn-primary btn-lg ml-auto  mr-auto">
+                    <button class="btn btn-primary btn-lg ml-auto mr-auto">
                         {% translate "Join online event" %}
                     </button>
                 </form>
