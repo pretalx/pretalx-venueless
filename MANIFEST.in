@@ -4,3 +4,4 @@ exclude pretalx_venueless/locale/django.pot
 recursive-include pretalx_venueless/locale *
 recursive-include pretalx_venueless *.py
 include justfile
+include uv.lock
