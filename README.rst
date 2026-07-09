@@ -1,13 +1,27 @@
 Venueless integration
 ==========================
 
-.. image:: https://raw.githubusercontent.com/pretalx/pretalx-venueless/python-coverage-comment-action-data/badge.svg
-   :target: https://htmlpreview.github.io/?https://github.com/pretalx/pretalx-venueless/blob/python-coverage-comment-action-data/htmlcov/index.html
-   :alt: Coverage
+.. image:: https://img.shields.io/pypi/v/pretalx-venueless.svg
+   :target: https://pypi.org/project/pretalx-venueless/
+   :alt: PyPI version
 
 This is a plugin for `pretalx`_.
 
 Use version 1.0.0 with pretalx 2.2.0, and later versions with pretalx versions past 2.2.0.
+
+Installation
+------------
+
+Install the plugin with pip, in the same environment as your pretalx
+installation::
+
+    (env)$ python -m pip install pretalx-venueless
+
+Afterwards, run ``migrate`` and ``rebuild`` and restart your pretalx services,
+just like after any pretalx update (see `performing updates`_ in the
+administrator documentation).
+
+You can then enable the plugin under "Settings → Plugins" in your event settings.
 
 Development setup
 -----------------
@@ -66,3 +80,4 @@ Released under the terms of the Apache License 2.0
 .. _pretalx development setup: https://docs.pretalx.org/en/latest/developer/setup.html
 .. _just: https://just.systems/
 .. _uv: https://docs.astral.sh/uv/
+.. _performing updates: https://docs.pretalx.org/administrator/maintenance/#performing-updates
