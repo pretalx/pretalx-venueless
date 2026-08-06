@@ -15,7 +15,7 @@
 
 {% block content %}
     {% if connect_in_progress %}
-        <h2>{% trans "Confirm your Venueless connection" %}</h2>
+        <h2 class="page-heading">{% trans "Confirm your Venueless connection" %}</h2>
         <div class="alert alert-info">
             <div>
                 {% blocktranslate trimmed %}
@@ -25,7 +25,7 @@
             </div>
         </div>
     {% else %}
-        <h2>{% trans "Venueless" %}</h2>
+        <h2 class="page-heading">{% trans "Venueless" %}</h2>
     {% endif %}
     {% if last_push %}
         <div class="alert alert-success">
