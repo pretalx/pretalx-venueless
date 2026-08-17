@@ -16,6 +16,7 @@ from django.views import View
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import FormView
 
+from pretalx.common.ui import Button
 from pretalx.event.models import Event
 from pretalx.orga.views.event import EventSettingsPermission
 
@@ -49,6 +50,8 @@ class Settings(EventSettingsPermission, FormView):
         data = super().get_context_data(**kwargs)
         data["connect_in_progress"] = self.request.GET.get("token")
         data["last_push"] = self.request.event.settings.venueless_last_push
+        if data["connect_in_progress"]:
+            data["submit_buttons"] = [Button(label=_("Connect"))]
         return data
 
     def form_valid(self, form):

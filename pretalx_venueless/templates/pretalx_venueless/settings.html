@@ -88,23 +88,6 @@
             {{ form.join_text.as_field_group }}
         </div>
 
-        <div class="submit-group panel">
-            <span></span>
-            <span class="d-flex flex-row-reverse">
-                <button
-                    type="submit"
-                    class="btn btn-success btn-lg"
-                    name="action"
-                    value="save"
-                >
-                    <i class="fa fa-check"></i>
-                    {% if connect_in_progress %}
-                        {% trans "Connect" %}
-                    {% else %}
-                        {% trans "Save" %}
-                    {% endif %}
-                </button>
-            </span>
-        </div>
+        {% include "orga/includes/submit_row.html" %}
     </form>
 {% endblock %}
