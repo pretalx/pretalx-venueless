@@ -4,10 +4,10 @@ import pytest
 from django.core import management
 from django_scopes import scopes_disabled
 
-from pretalx.person.enums import EmailVerificationState
 from pretalx.event.domain.event import initialise_event
 from pretalx.event.domain.plugins import enable_plugin
 from pretalx.event.models import Event, Organiser, Team
+from pretalx.person.enums import EmailVerificationState
 from pretalx.person.models import SpeakerProfile, User
 from pretalx.schedule.domain.release import freeze_schedule
 from pretalx.schedule.models import Room, TalkSlot
