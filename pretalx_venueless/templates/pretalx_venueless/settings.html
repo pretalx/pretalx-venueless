@@ -1,5 +1,6 @@
 {% extends "orga/base.html" %}
 
+{% load form_errors %}
 {% load copyable %}
 {% load i18n %}
 {% load static %}
@@ -64,7 +65,7 @@
             {% endblocktranslate %}
         </p>
 
-        {% include "common/forms/errors.html" %}
+        {% form_errors form %}
 
         {{ form.url.as_field_group }}
         {{ form.token.as_field_group }}
