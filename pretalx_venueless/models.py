@@ -58,6 +58,10 @@ class VenuelessSettings(models.Model):
     def __str__(self):
         return f"VenuelessSettings(event={self.event})"
 
+    @classmethod
+    def for_event(cls, event):
+        return cls.objects.filter(event=event).first()
+
     @property
     def can_join(self):
         return self.show_join_link and (not self.join_start or self.join_start <= now())

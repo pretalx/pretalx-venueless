@@ -9,18 +9,19 @@ from pretalx.cfp.signals import html_above_profile_page, html_above_submission_l
 from pretalx.orga.signals import nav_event_settings
 from pretalx.schedule.signals import schedule_release
 
+from .models import VenuelessSettings
 from .venueless import push_to_venueless
 
 
 @receiver(schedule_release, dispatch_uid="venuless_schedule_release")
 def on_schedule_release(sender, schedule, user, **kwargs):
-    venueless_settings = getattr(sender, "venueless_settings", None)
+    venueless_settings = VenuelessSettings.for_event(sender)
     if not venueless_settings:
         return
     if not (venueless_settings.url and venueless_settings.token):
         return
     with suppress(Exception):
-        push_to_venueless(sender)
+        push_to_venueless(sender, venueless_settings)
 
 
 @receiver(nav_event_settings, dispatch_uid="venueless_nav_settings")
@@ -54,16 +55,23 @@ def submission_page_join(sender, request, **kwargs):
 
 
 def render_join_link(event, request):
-    venueless_settings = getattr(event, "venueless_settings", None)
     if (
         request.user.is_anonymous
         or not event.talks.filter(speakers__user=request.user).exists()
-        or not venueless_settings
+    ):
+        return
+    venueless_settings = VenuelessSettings.for_event(event)
+    if (
+        not venueless_settings
         or not venueless_settings.secret
         or not venueless_settings.show_join_link
     ):
         return
 
     template = get_template("pretalx_venueless/join_link.html")
-    ctx = {"event": event, "user": request.user}
+    ctx = {
+        "event": event,
+        "user": request.user,
+        "venueless_settings": venueless_settings,
+    }
     return template.render(ctx, request=request)

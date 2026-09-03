@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load rich_text %}
 
-{# required variables: user, event #}
+{# required variables: user, event, venueless_settings #}
 
 <div class="card mb-4">
     <div class="card-header">
@@ -10,9 +10,9 @@
         </h3>
     </div>
     <div class="card-body">
-        {% if event.venueless_settings.can_join %}
-            {% if event.venueless_settings.join_text %}
-                {{ event.venueless_settings.join_text|rich_text }}
+        {% if venueless_settings.can_join %}
+            {% if venueless_settings.join_text %}
+                {{ venueless_settings.join_text|rich_text }}
             {% else %}
                 <p>
                     {% blocktranslate trimmed %}

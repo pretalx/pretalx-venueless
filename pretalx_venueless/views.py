@@ -21,6 +21,7 @@ from pretalx.event.models import Event
 from pretalx.orga.views.event import EventSettingsPermission
 
 from .forms import VenuelessSettingsForm
+from .models import VenuelessSettings
 from .venueless import push_to_venueless
 
 
@@ -59,7 +60,7 @@ class Settings(EventSettingsPermission, FormView):
 
         response = None
         try:
-            response = push_to_venueless(self.request.event)
+            response = push_to_venueless(self.request.event, form.instance)
         except (urllib3.exceptions.HTTPError, OSError) as e:
             messages.error(self.request, _("Unable to reach Venueless:") + f" {e}")
             return super().form_valid(form)
@@ -103,7 +104,7 @@ class SpeakerJoin(View):
         if not speaker:
             raise PermissionDenied
 
-        venueless_settings = request.event.venueless_settings
+        venueless_settings = VenuelessSettings.for_event(request.event)
         if venueless_settings.join_start and venueless_settings.join_start < now():
             raise PermissionDenied
 

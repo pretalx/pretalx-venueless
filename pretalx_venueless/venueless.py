@@ -4,10 +4,14 @@ import urllib3
 from django.conf import settings
 from django.utils.timezone import now
 
+from .models import VenuelessSettings
 
-def push_to_venueless(event):
-    url = urljoin(event.venueless_settings.url, "schedule_update")
-    token = event.venueless_settings.token
+
+def push_to_venueless(event, venueless_settings=None):
+    if venueless_settings is None:
+        venueless_settings = VenuelessSettings.for_event(event)
+    url = urljoin(venueless_settings.url, "schedule_update")
+    token = venueless_settings.token
     response = urllib3.request(
         "POST",
         url,
@@ -16,5 +20,5 @@ def push_to_venueless(event):
         timeout=30,
     )
     if response.status == 200:
-        event.venueless_settings.last_push = now()
+        venueless_settings.last_push = now()
     return response

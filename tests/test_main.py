@@ -223,6 +223,18 @@ def test_push_to_venueless_success(event):
 
 
 @pytest.mark.django_db
+def test_push_to_venueless_with_explicit_settings(event):
+    settings = VenuelessSettings.objects.create(
+        event=event, token="test-token", url="https://venueless.example.com/"
+    )
+    with patch("pretalx_venueless.venueless.urllib3.request") as mock_request:
+        mock_request.return_value.status = 200
+        response = push_to_venueless(event, settings)
+    assert response.status == 200
+    assert settings.last_push is not None
+
+
+@pytest.mark.django_db
 def test_push_to_venueless_failure(event):
     VenuelessSettings.objects.create(
         event=event, token="test-token", url="https://venueless.example.com/"
@@ -235,12 +247,12 @@ def test_push_to_venueless_failure(event):
 
 @pytest.mark.django_db
 def test_schedule_release_signal(event):
-    VenuelessSettings.objects.create(
+    settings = VenuelessSettings.objects.create(
         event=event, token="test-token", url="https://venueless.example.com/"
     )
     with patch("pretalx_venueless.signals.push_to_venueless") as mock_push:
         schedule_release.send(sender=event, schedule=None, user=None)
-    mock_push.assert_called_once_with(event)
+    mock_push.assert_called_once_with(event, settings)
 
 
 @pytest.mark.django_db
@@ -336,6 +348,14 @@ def test_submission_page_join_link_rendered(
     html_results = [r for _, r in results if r]
     assert html_results
     assert any("venueless" in r.lower() for r in html_results)
+
+
+@pytest.mark.django_db
+def test_submission_page_join_link_without_settings(released_speaker_client, event):
+    request = released_speaker_client.get("/").wsgi_request
+    with scope(event=event):
+        results = html_above_submission_list.send(sender=event, request=request)
+    assert not [r for _, r in results if r]
 
 
 @pytest.mark.django_db
