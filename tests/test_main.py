@@ -32,6 +32,14 @@ def test_orga_can_access_settings(orga_client, event):
 
 
 @pytest.mark.django_db
+def test_orga_settings_show_last_push(orga_client, event):
+    VenuelessSettings.objects.create(event=event, last_push=now() - timedelta(days=1))
+    response = orga_client.get(reverse(SETTINGS_URL_NAME, kwargs={"event": event.slug}))
+    assert response.status_code == 200
+    assert "Data was last pushed on" in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_orga_can_save_settings(orga_client, event):
     url = reverse(SETTINGS_URL_NAME, kwargs={"event": event.slug})
     with patch("pretalx_venueless.views.push_to_venueless") as mock_push:
@@ -231,6 +239,7 @@ def test_push_to_venueless_with_explicit_settings(event):
         mock_request.return_value.status = 200
         response = push_to_venueless(event, settings)
     assert response.status == 200
+    settings.refresh_from_db()
     assert settings.last_push is not None
 
 
@@ -243,6 +252,7 @@ def test_push_to_venueless_failure(event):
         mock_request.return_value.status = 500
         response = push_to_venueless(event)
     assert response.status == 500
+    assert VenuelessSettings.for_event(event).last_push is None
 
 
 @pytest.mark.django_db

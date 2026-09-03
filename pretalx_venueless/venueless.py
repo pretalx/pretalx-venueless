@@ -21,4 +21,5 @@ def push_to_venueless(event, venueless_settings=None):
     )
     if response.status == 200:
         venueless_settings.last_push = now()
+        venueless_settings.save(update_fields=["last_push"])
     return response

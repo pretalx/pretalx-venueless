@@ -50,7 +50,7 @@ class Settings(EventSettingsPermission, FormView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data["connect_in_progress"] = self.request.GET.get("token")
-        data["last_push"] = self.request.event.settings.venueless_last_push
+        data["last_push"] = data["form"].instance.last_push
         if data["connect_in_progress"]:
             data["submit_buttons"] = [Button(label=_("Connect"))]
         return data
