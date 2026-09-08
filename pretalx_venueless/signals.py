@@ -57,7 +57,7 @@ def submission_page_join(sender, request, **kwargs):
 def render_join_link(event, request):
     if (
         request.user.is_anonymous
-        or not event.talks.filter(speakers__user=request.user).exists()
+        or not event.talks.filter(speakers=request.user).exists()
     ):
         return
     venueless_settings = VenuelessSettings.for_event(event)
