@@ -6,7 +6,7 @@ from django.urls import resolve, reverse
 from django.utils.translation import gettext_lazy as _
 
 from pretalx.cfp.signals import html_above_profile_page, html_above_submission_list
-from pretalx.orga.signals import nav_event_settings
+from pretalx.orga.signals import event_copy_data, nav_event_settings
 from pretalx.schedule.signals import schedule_release
 
 from .models import VenuelessSettings
@@ -75,3 +75,21 @@ def render_join_link(event, request):
         "venueless_settings": venueless_settings,
     }
     return template.render(ctx, request=request)
+
+
+@receiver(event_copy_data, dispatch_uid="venueless_copy_data")
+def copy_event_settings(sender, other, **kwargs):
+    # Token, URLs and JWT secrets identify one venueless world, so only
+    # the join button settings travel to the new event.
+    old_settings = VenuelessSettings.objects.filter(event__slug__iexact=other).first()
+    if not old_settings:
+        return
+    join_start = old_settings.join_start
+    if join_start:
+        join_start += sender.date_from - old_settings.event.date_from
+    VenuelessSettings.objects.create(
+        event=sender,
+        show_join_link=old_settings.show_join_link,
+        join_start=join_start,
+        join_text=old_settings.join_text,
+    )

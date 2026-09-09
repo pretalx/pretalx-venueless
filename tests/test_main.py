@@ -1,3 +1,4 @@
+import datetime as dt
 from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
@@ -9,7 +10,9 @@ from django.utils.timezone import now
 from django_scopes import scope, scopes_disabled
 
 from pretalx.cfp.signals import html_above_profile_page, html_above_submission_list
+from pretalx.event.domain.event import copy_event_data, initialise_event
 from pretalx.event.domain.plugins import disable_plugin, enable_plugin
+from pretalx.event.models import Event
 from pretalx.person.models.picture import ProfilePicture
 from pretalx.schedule.signals import schedule_release
 
@@ -403,3 +406,50 @@ def test_speaker_join_blocked_after_join_start(
         reverse(JOIN_URL_NAME, kwargs={"event": event.slug})
     )
     assert response.status_code == 403
+
+
+def _copied_event(event, plugin):
+    with scopes_disabled():
+        new_event = Event.objects.create(
+            name="Copied event",
+            slug="copied",
+            email="orga@orga.org",
+            date_from=event.date_from + dt.timedelta(days=7),
+            date_to=event.date_to + dt.timedelta(days=7),
+            organiser=event.organiser,
+        )
+        initialise_event(new_event)
+        enable_plugin(new_event, plugin)
+        copy_event_data(event=new_event, source=event)
+    return new_event
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("with_join_start", (True, False))
+def test_event_copy_copies_join_settings_only(
+    event, venueless_settings, with_join_start
+):
+    venueless_settings.join_text = "Welcome"
+    venueless_settings.join_start = now() if with_join_start else None
+    venueless_settings.last_push = now()
+    venueless_settings.save()
+    new_event = _copied_event(event, "pretalx_venueless")
+    new_settings = VenuelessSettings.objects.get(event=new_event)
+    assert new_settings.show_join_link is True
+    assert str(new_settings.join_text) == "Welcome"
+    if with_join_start:
+        assert new_settings.join_start == venueless_settings.join_start + dt.timedelta(
+            days=7
+        )
+    else:
+        assert new_settings.join_start is None
+    for field in ("token", "url", "secret", "issuer", "audience", "join_url"):
+        assert getattr(new_settings, field) is None
+    assert new_settings.last_push is None
+    assert VenuelessSettings.objects.filter(event=event).exists()
+
+
+@pytest.mark.django_db
+def test_event_copy_without_settings(event):
+    new_event = _copied_event(event, "pretalx_venueless")
+    assert not VenuelessSettings.objects.filter(event=new_event).exists()
